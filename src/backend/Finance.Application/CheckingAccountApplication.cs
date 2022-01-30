@@ -16,7 +16,7 @@ namespace Finance.Application
         {
             var id = Guid.NewGuid();
             var account = new CheckingAccount(id, name, description, grossValue);
-            await _eventStore.Store(account);
+            await _eventStore.StoreAsync(account);
         }
     }
 }

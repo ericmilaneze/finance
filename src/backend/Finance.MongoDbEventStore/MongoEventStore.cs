@@ -1,31 +1,48 @@
 using Finance.Framework;
+using Finance.MongoDbEventStore.Registry;
+using MongoDB.Driver;
 
 namespace Finance.MongoDbEventStore
 {
-    public class MongoEventStore : IDbEventStore
+    public class MongoEventStore : IDbEventStore<Guid>
     {
-        public Task<EventRecord[]> GetEventRecords(string aggregateName, object id)
+        private readonly IMongoDatabase _database;
+
+        static MongoEventStore() =>
+            MongoDbSettings.RegiterSettings();
+
+        public MongoEventStore(string connectionString, string dbName)
         {
-            return Task.FromResult(new EventRecord[]
-            {
-                new EventRecord(
-                    "",
-                    Guid.NewGuid(),
-                    1,
-                    DateTime.UtcNow,
-                    "Finance.Domain.Events.CheckingAccountEvents+V1+CheckingAccountCreated",
-                    "{\"Name\":\"Account Test\",\"Description\":null,\"GrossValue\":10.23,\"NetValue\":10.23}")
-            });
+            var client = new MongoClient(connectionString);
+            _database = client.GetDatabase(dbName);
         }
 
-        public Task<int> GetNextVersion(string aggregateName, object id)
+        public async Task<IList<EventRecord<Guid>>> GetEventRecordsAsync(string aggregateName, Guid id)
         {
-            return Task.FromResult(1);
+            return await _database
+                .GetCollection<EventRecord<Guid>>(CollectionNamesRegistry.GetCollectionName<EventRecord<Guid>>())
+                .Find(x => x.AggregateType == aggregateName && x.Id == id)
+                .ToListAsync();
         }
 
-        public Task StoreEvent(EventRecord eventRecord)
+        public async Task<int> GetNextVersionAsync(string aggregateName, Guid id)
         {
-            throw new NotImplementedException();
+            var lastVersion = await _database
+                .GetCollection<EventRecord<Guid>>(CollectionNamesRegistry.GetCollectionName<EventRecord<Guid>>())
+                .Find(x => x.AggregateType == aggregateName && x.Id == id)
+                .SortByDescending(x => x.Version)
+                .Limit(1)
+                .Project(x => x.Version)
+                .FirstOrDefaultAsync();
+
+            return lastVersion + 1;
+        }
+
+        public async Task StoreEventAsync(EventRecord<Guid> eventRecord)
+        {
+            await _database
+                .GetCollection<EventRecord<Guid>>(CollectionNamesRegistry.GetCollectionName<EventRecord<Guid>>())
+                .InsertOneAsync(eventRecord);
         }
     }
 }

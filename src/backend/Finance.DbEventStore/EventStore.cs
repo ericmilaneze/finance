@@ -13,6 +13,7 @@ namespace Finance.DbEventStore
         private const string CouldNotConvertAggregateMessage = "Could not convert to TAggregate.";
         private const string EventTypeClassNotFound = "Event type class not found.";
         private const string CouldNotDeserializeEventMessage = "Could not deserialize the event.";
+        private const string NoEventRecordsFoundMessage = "No event records found for the object.";
 
         private readonly IDbEventStore<TId> _dbEventStore;
         private readonly IAggregateNameResolver<TAggregate, TId> _aggregateNameResolver;
@@ -25,11 +26,16 @@ namespace Finance.DbEventStore
             _aggregateNameResolver = aggregateNameResolver;
         }
 
-        public async Task<TAggregate> Get(TId id)
+        public async Task<TAggregate> GetAsync(TId id)
         {
             var aggregate = CreateAggregate(id);
 
-            foreach (var eventRecord in await _dbEventStore.GetEventRecords(_aggregateNameResolver.Resolve(aggregate), id))
+            var eventRecords = await _dbEventStore.GetEventRecordsAsync(_aggregateNameResolver.Resolve(aggregate), id);
+
+            if (eventRecords.Count == 0)
+                throw new EventStoreException(NoEventRecordsFoundMessage);
+
+            foreach (var eventRecord in eventRecords)
                 HandleEvent(aggregate, eventRecord);
 
             return aggregate;
@@ -47,7 +53,7 @@ namespace Finance.DbEventStore
                     ?? throw new EventStoreException(CouldNotConvertAggregateMessage);
             }
 
-            static void HandleEvent(TAggregate aggregate, EventRecord eventRecord)
+            static void HandleEvent(TAggregate aggregate, EventRecord<TId> eventRecord)
             {
                 var eventType = typeof(Domain.Info).Assembly.GetType(eventRecord.EventType)
                     ?? throw new EventStoreException(EventTypeClassNotFound);
@@ -60,9 +66,9 @@ namespace Finance.DbEventStore
             }
         }
 
-        public async Task Store(TAggregate aggregate)
+        public async Task StoreAsync(TAggregate aggregate)
         {
-            var nextVersion = await _dbEventStore.GetNextVersion(
+            var nextVersion = await _dbEventStore.GetNextVersionAsync(
                 _aggregateNameResolver.Resolve(aggregate),
                 aggregate.Id);
 
@@ -76,7 +82,7 @@ namespace Finance.DbEventStore
 
             async Task StoreEvent(TAggregate aggregate, int nextVersion, IEvent @event)
             {
-                var eventRecord = new EventRecord(
+                var eventRecord = new EventRecord<TId>(
                     _aggregateNameResolver.Resolve(aggregate),
                     aggregate.Id,
                     nextVersion,
@@ -84,7 +90,7 @@ namespace Finance.DbEventStore
                     @event?.GetType()?.FullName ?? throw new EventStoreException(TEventNullMessage),
                     JsonSerializer.Serialize(@event, @event.GetType()));
 
-                await _dbEventStore.StoreEvent(eventRecord);
+                await _dbEventStore.StoreEventAsync(eventRecord);
             }
         }
     }
@@ -92,7 +98,7 @@ namespace Finance.DbEventStore
     public class EventStore<TAggregate> : EventStore<TAggregate, Guid>, IEventStore<TAggregate>
         where TAggregate : AggregateRoot
     {
-        public EventStore(IAggregateNameResolver<TAggregate> aggregateNameResolver, IDbEventStore dbEventStore)
+        public EventStore(IAggregateNameResolver<TAggregate> aggregateNameResolver, IDbEventStore<Guid> dbEventStore)
             : base(aggregateNameResolver, dbEventStore)
         {
         }

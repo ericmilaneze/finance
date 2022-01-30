@@ -3,12 +3,8 @@ namespace Finance.Framework
     public interface IDbEventStore<TId>
         where TId : struct
     {
-        Task<EventRecord[]> GetEventRecords(string aggregateName, object id);
-        Task<int> GetNextVersion(string aggregateName, object id);
-        Task StoreEvent(EventRecord eventRecord);
-    }
-
-    public interface IDbEventStore : IDbEventStore<Guid>
-    {
+        Task<IList<EventRecord<TId>>> GetEventRecordsAsync(string aggregateName, TId id);
+        Task<int> GetNextVersionAsync(string aggregateName, TId id);
+        Task StoreEventAsync(EventRecord<TId> eventRecord);
     }
 }

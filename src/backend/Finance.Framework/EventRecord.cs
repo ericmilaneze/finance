@@ -1,10 +1,10 @@
 namespace Finance.Framework
 {
-    public record EventRecord(
+    public record EventRecord<TId>(
         string AggregateType,
-        object Id,
+        TId Id,
         int Version,
         DateTime TimeStamp,
         string EventType,
-        string Event);
+        string Event) where TId : struct;
 }
