@@ -1,4 +1,4 @@
-namespace Finance.MongoDbEventStore
+namespace Finance.Framework
 {
     public record EventRecord(
         string AggregateType,

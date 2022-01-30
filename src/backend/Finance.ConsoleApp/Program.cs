@@ -2,10 +2,11 @@
 
 using Finance.Application;
 using Finance.Domain.FixInc.ChkAcc;
+using Finance.DbEventStore;
 using Finance.MongoDbEventStore;
 
-var app = new CheckingAccountApplication(new EventStore<CheckingAccount>());
-app.CreateAccount("Account Test", null, 10.23M);
+var app = new CheckingAccountApplication(new EventStore<CheckingAccount>(new AggregateNameResolver<CheckingAccount>(), new MongoEventStore()));
+await app.CreateAccount("Account Test", null, 10.23M);
 
 Console.WriteLine("Created");
 

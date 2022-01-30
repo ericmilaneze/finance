@@ -4,13 +4,13 @@ namespace Finance.Framework
         where TAggregate : AggregateRoot<TId>
         where TId : struct
     {
-        TAggregate Get(TId id);
-        void Store(TAggregate obj);
+        Task<TAggregate> Get(TId id);
+        Task Store(TAggregate aggregate);
     }
 
     public interface IEventStore<TAggregate> : IEventStore<TAggregate, Guid>
         where TAggregate : AggregateRoot
     {
-        new TAggregate Get(Guid id);
+        new Task<TAggregate> Get(Guid id);
     }
 }

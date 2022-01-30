@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Finance.Domain\Finance.Domain.csproj" />
     <ProjectReference Include="..\Finance.Framework\Finance.Framework.csproj" />
+    <ProjectReference Include="..\Finance.DbEventStore\Finance.DbEventStore.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
