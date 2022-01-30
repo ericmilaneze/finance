@@ -4,13 +4,14 @@ using Finance.Framework;
 
 namespace Finance.MongoDbEventStore
 {
-    public class EventStore<TAggregate> : IEventStore<TAggregate>
-        where TAggregate : AggregateRoot
+    public class EventStore<TAggregate, TId> : IEventStore<TAggregate, TId>
+        where TAggregate : AggregateRoot<TId>
+        where TId : struct
     {
         private const string TAggregateNullMessage = "TAggregate should never be null.";
         private const string TEventNullMessage = "Event should never be null.";
 
-        public TAggregate Get(Guid id)
+        public TAggregate Get(TId id)
         {
             var aggregateConstructor = typeof(TAggregate)
                 .GetConstructor(
@@ -65,7 +66,7 @@ namespace Finance.MongoDbEventStore
             obj.ClearEvents();
         }
 
-        private EventRecord[] GetEventRecords(string aggregateName, Guid id)
+        private EventRecord[] GetEventRecords(string aggregateName, TId id)
         {
             return new EventRecord[]
             {
@@ -79,7 +80,7 @@ namespace Finance.MongoDbEventStore
             };
         }
 
-        private int GetNextVersion(string aggregateName, Guid id)
+        private int GetNextVersion(string aggregateName, TId id)
         {
             return 1;
         }
@@ -87,5 +88,10 @@ namespace Finance.MongoDbEventStore
         private void StoreEvent(EventRecord eventRecord)
         {
         }
+    }
+
+    public class EventStore<TAggregate> : EventStore<TAggregate, Guid>, IEventStore<TAggregate>
+        where TAggregate : AggregateRoot
+    {
     }
 }

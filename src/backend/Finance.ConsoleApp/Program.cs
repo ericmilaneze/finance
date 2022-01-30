@@ -4,10 +4,15 @@ using Finance.Application;
 using Finance.Domain.FixInc.ChkAcc;
 using Finance.MongoDbEventStore;
 
-//var app = new CheckingAccountApplication(new EventStore<CheckingAccount>());
-// app.CreateAccount("Account Test", null, 10.23M);
+var app = new CheckingAccountApplication(new EventStore<CheckingAccount>());
+app.CreateAccount("Account Test", null, 10.23M);
 
-var eventStore = new EventStore<CheckingAccount>();
-var aggregate = eventStore.Get(Guid.NewGuid());
+Console.WriteLine("Created");
 
-Console.WriteLine(aggregate);
+// var eventStore = new EventStore<CheckingAccount, Guid>();
+// var aggregate = eventStore.Get(Guid.NewGuid());
+
+// var eventStore = new EventStore<CheckingAccount>();
+// var aggregate = eventStore.Get(Guid.NewGuid());
+
+// Console.WriteLine(aggregate);
