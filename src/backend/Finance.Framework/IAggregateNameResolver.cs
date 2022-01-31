@@ -1,6 +1,4 @@
-using Finance.Framework;
-
-namespace Finance.DbEventStore
+namespace Finance.Framework
 {
     public interface IAggregateNameResolver<TAggregate, TId>
         where TAggregate : AggregateRoot<TId>

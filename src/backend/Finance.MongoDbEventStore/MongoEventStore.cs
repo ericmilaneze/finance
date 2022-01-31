@@ -22,6 +22,7 @@ namespace Finance.MongoDbEventStore
             return await _database
                 .GetCollection<EventRecord<Guid>>(CollectionNamesRegistry.GetCollectionName<EventRecord<Guid>>())
                 .Find(x => x.AggregateType == aggregateName && x.Id == id)
+                .SortBy(x => x.Version)
                 .ToListAsync();
         }
 
@@ -43,6 +44,13 @@ namespace Finance.MongoDbEventStore
             await _database
                 .GetCollection<EventRecord<Guid>>(CollectionNamesRegistry.GetCollectionName<EventRecord<Guid>>())
                 .InsertOneAsync(eventRecord);
+        }
+
+        public async Task StoreEventsAsync(EventRecord<Guid>[] eventRecords)
+        {
+            await _database
+                .GetCollection<EventRecord<Guid>>(CollectionNamesRegistry.GetCollectionName<EventRecord<Guid>>())
+                .InsertManyAsync(eventRecords);
         }
     }
 }
