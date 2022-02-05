@@ -1,6 +1,6 @@
 namespace Finance.Common.FixInc
 {
-    public enum CheckingAccountState
+    public enum CashState
     {
         NonExisting = 0,
         Created = 1

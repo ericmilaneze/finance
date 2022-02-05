@@ -9,6 +9,7 @@ namespace Finance.MongoDbReading.Registry
             Dictionary<Type, string> collectionNames = new()
             {
                 [typeof(CheckingAccount)] = "checkingAccounts",
+                [typeof(Cash)] = "cash",
             };
 
             return collectionNames[typeof(T)];

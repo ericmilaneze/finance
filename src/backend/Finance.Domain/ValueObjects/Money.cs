@@ -1,24 +1,24 @@
 namespace Finance.Domain.ValueObjects
 {
-    public class Money
+    public record Money
     {
-        private readonly decimal _value;
+        public decimal Value { get; }
 
         internal Money(decimal value)
         {
-            _value = value;
+            Value = value;
         }
 
         public static Money Create(decimal value) =>
             new(value);
 
         public static implicit operator Money(decimal value) => Create(value);
-        public static implicit operator decimal(Money money) => money?._value ?? default;
-        public static implicit operator decimal?(Money money) => money?._value;
+        public static implicit operator decimal(Money money) => money?.Value ?? default;
+        public static implicit operator decimal?(Money money) => money?.Value;
 
         public override string ToString()
         {
-            return _value.ToString();
+            return Value.ToString();
         }
     }
 }

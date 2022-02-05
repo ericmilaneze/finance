@@ -12,13 +12,18 @@ namespace Finance.Application
             _eventStore = eventStore;
         }
 
-        public async Task<Guid> CreateAccountAsync(string name, string description, decimal grossValue)
+        public async Task<Guid> CreateAccountAsync(
+            string name,
+            string description,
+            string bankCode,
+            decimal grossValue)
         {
             var id = Guid.NewGuid();
             var account = new CheckingAccount(
                 id,
                 name,
                 description,
+                bankCode,
                 grossValue);
             await _eventStore.StoreAsync(account);
             return id;

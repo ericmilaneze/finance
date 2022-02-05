@@ -7,11 +7,6 @@ namespace Finance.MongoDbReading.Registry
     {
         public static void RegisterClassMaps()
         {
-            BsonClassMap.RegisterClassMap<CheckingAccount>(cm =>
-            {
-                cm.AutoMap();
-                cm.SetIgnoreExtraElements(true);
-            });
         }
     }
 }

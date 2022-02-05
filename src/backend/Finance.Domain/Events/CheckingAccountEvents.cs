@@ -10,10 +10,14 @@ namespace Finance.Domain.Events
                 Guid Id,
                 string Name,
                 string Description,
+                string BankCode,
                 decimal GrossValue,
                 decimal NetValue) : IEvent;
 
-            public record GrossValueUpdated(Guid Id, decimal GrossValue, decimal NetValue) : IEvent;
+            public record GrossValueUpdated(
+                Guid Id,
+                decimal GrossValue,
+                decimal NetValue) : IEvent;
         }
     }
 }

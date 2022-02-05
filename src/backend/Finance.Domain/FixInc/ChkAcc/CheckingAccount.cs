@@ -1,17 +1,18 @@
-using Finance.Common.FixInc.ChkAcc;
+using Finance.Common.FixInc;
 using Finance.Domain.Events;
 using Finance.Domain.ValueObjects;
 using Finance.Framework;
 
 namespace Finance.Domain.FixInc.ChkAcc
 {
-    public class CheckingAccount : AggregateRoot, IFixedIncome
+    public class CheckingAccount : AggregateRoot
     {
         private const string GrossValueNotSetMessage = "Gross value should be set.";
         private const string NetValueNotSetMessage = "Net value should be set.";
 
-        public CheckingAccountName Name { get; private set; } = new CheckingAccountName(string.Empty);
+        public CheckingAccountName? Name { get; private set; }
         public string? Description { get; private set; }
+        public string? BankCode { get; private set; }
         public Money GrossValue { get; private set; } = new Money(default);
         public Money NetValue { get; private set; } = new Money(default);
         public CheckingAccountState State { get; private set; }
@@ -21,14 +22,19 @@ namespace Finance.Domain.FixInc.ChkAcc
         {
         }
 
-        public CheckingAccount(Guid id, CheckingAccountName name, string description, Money initialGrossValue)
-            : this(id)
+        public CheckingAccount(
+            Guid id,
+            CheckingAccountName name,
+            string description,
+            string bankCode,
+            Money initialGrossValue) : this(id)
         {
             RaiseEvent(
                 new CheckingAccountEvents.V1.CheckingAccountCreated(
                     id,
                     name,
                     description,
+                    bankCode,
                     initialGrossValue,
                     initialGrossValue));
         }
@@ -59,6 +65,7 @@ namespace Finance.Domain.FixInc.ChkAcc
         {
             Name = new CheckingAccountName(@event.Name);
             Description = @event.Description;
+            BankCode = @event.BankCode;
             GrossValue = new Money(@event.GrossValue);
             NetValue = new Money(@event.NetValue);
             State = CheckingAccountState.Created;

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Finance.Common.FixInc.ChkAcc;
+using Finance.Common.FixInc;
 using Finance.DbReading.Models;
 using Finance.Domain.Events;
 using Finance.Framework;
@@ -27,7 +27,9 @@ namespace Finance.MongoDbReading
             _database = client.GetDatabase(dbName ?? MongoDbSettings.Projection.DatabaseName);
         }
 
-        public async Task ProjectEventsAsync(EventRecord<Guid>[] eventRecords, CancellationToken cancellationToken = default)
+        public async Task ProjectEventsAsync(
+            EventRecord<Guid>[] eventRecords,
+            CancellationToken cancellationToken = default)
         {
             foreach (var eventRecord in eventRecords)
             {
@@ -39,17 +41,32 @@ namespace Finance.MongoDbReading
                     case CheckingAccountEvents.V1.GrossValueUpdated e:
                         await HandleEventAsync(e, cancellationToken: cancellationToken);
                         break;
+                    case CashEvents.V1.CashCreated e:
+                        await HandleEventAsync(e, cancellationToken: cancellationToken);
+                        break;
+                    case CashEvents.V1.ValueUpdated e:
+                        await HandleEventAsync(e, cancellationToken: cancellationToken);
+                        break;
                 }
             }
         }
 
-        private async Task HandleEventAsync(CheckingAccountEvents.V1.CheckingAccountCreated @event, CancellationToken cancellationToken = default)
+        private IEvent GetEvent(EventRecord<Guid> eventRecord) =>
+            JsonSerializer.Deserialize(
+                eventRecord.Event,
+                _eventTypeResolver.Resolve(eventRecord.EventType)) as IEvent
+                ?? throw new ProjectionException(CouldNotDeserializeEventMessage);
+
+        private async Task HandleEventAsync(
+            CheckingAccountEvents.V1.CheckingAccountCreated @event,
+            CancellationToken cancellationToken = default)
         {
             var model = new CheckingAccount
             {
                 Id = @event.Id,
                 Name = @event.Name,
                 Description = @event.Description,
+                BankCode = @event.BankCode,
                 GrossValue = @event.GrossValue,
                 NetValue = @event.NetValue,
                 State = CheckingAccountState.Created,
@@ -60,7 +77,9 @@ namespace Finance.MongoDbReading
                 .InsertOneAsync(model, cancellationToken: cancellationToken);
         }
 
-        private async Task HandleEventAsync(CheckingAccountEvents.V1.GrossValueUpdated @event, CancellationToken cancellationToken = default)
+        private async Task HandleEventAsync(
+            CheckingAccountEvents.V1.GrossValueUpdated @event,
+            CancellationToken cancellationToken = default)
         {
             var model = await _database
                 .GetCollection<CheckingAccount>(CollectionNamesRegistry.GetCollectionName<CheckingAccount>())
@@ -78,10 +97,39 @@ namespace Finance.MongoDbReading
                 .ReplaceOneAsync(x => x.Id == updatedModel.Id, updatedModel, cancellationToken: cancellationToken);
         }
 
-        private IEvent GetEvent(EventRecord<Guid> eventRecord) =>
-            JsonSerializer.Deserialize(
-                eventRecord.Event,
-                _eventTypeResolver.Resolve(eventRecord.EventType)) as IEvent
-                ?? throw new ProjectionException(CouldNotDeserializeEventMessage);
+        private async Task HandleEventAsync(
+            CashEvents.V1.CashCreated @event,
+            CancellationToken cancellationToken = default)
+        {
+            var model = new Cash
+            {
+                Id = @event.Id,
+                Value = @event.Value,
+                State = CashState.Created,
+            };
+
+            await _database
+                .GetCollection<Cash>(CollectionNamesRegistry.GetCollectionName<Cash>())
+                .InsertOneAsync(model, cancellationToken: cancellationToken);
+        }
+
+        private async Task HandleEventAsync(
+            CashEvents.V1.ValueUpdated @event,
+            CancellationToken cancellationToken = default)
+        {
+            var model = await _database
+                .GetCollection<Cash>(CollectionNamesRegistry.GetCollectionName<Cash>())
+                .Find(x => x.Id == @event.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var updatedModel = model with
+            {
+                Value = @event.Value
+            };
+
+            await _database
+                .GetCollection<Cash>(CollectionNamesRegistry.GetCollectionName<Cash>())
+                .ReplaceOneAsync(x => x.Id == updatedModel.Id, updatedModel, cancellationToken: cancellationToken);
+        }
     }
 }

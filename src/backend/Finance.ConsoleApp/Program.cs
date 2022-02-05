@@ -32,19 +32,8 @@ var app = new CheckingAccountApplication(
         eventStore,
         projection));
 
-var id = await app.CreateAccountAsync("Account Test", null, 10.23M);
+var id = await app.CreateAccountAsync("Account Test", null, "237", 10.23M);
 
 Console.WriteLine("Created");
 
 await app.UpdateAccountAsync(id, 1.10M);
-
-//  var eventStore = new EventStore<CheckingAccount>(
-//     new AggregateNameResolver<CheckingAccount>(),
-//     new EventTypeResolver(),
-//     new MongoEventStore("mongodb://root:123456@localhost:27017/", "finance"));
-// var aggregate = await eventStore.GetAsync(Guid.Parse("192ab642-7421-4d09-9215-1e63a9d7d8ec"));
-
-// var eventStore = new EventStore<CheckingAccount>();
-// var aggregate = eventStore.Get(Guid.NewGuid());
-
- //Console.WriteLine(aggregate);
