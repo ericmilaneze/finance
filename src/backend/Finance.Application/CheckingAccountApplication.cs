@@ -12,10 +12,22 @@ namespace Finance.Application
             _eventStore = eventStore;
         }
 
-        public async Task CreateAccount(string name, string description, decimal grossValue)
+        public async Task<Guid> CreateAccountAsync(string name, string description, decimal grossValue)
         {
             var id = Guid.NewGuid();
-            var account = new CheckingAccount(id, name, description, grossValue);
+            var account = new CheckingAccount(
+                id,
+                name,
+                description,
+                grossValue);
+            await _eventStore.StoreAsync(account);
+            return id;
+        }
+
+        public async Task UpdateAccountAsync(Guid id, decimal grossValue)
+        {
+            var account = await _eventStore.GetAsync(id);
+            account.UpdateGrossValue(grossValue);
             await _eventStore.StoreAsync(account);
         }
     }

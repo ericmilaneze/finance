@@ -4,13 +4,12 @@ namespace Finance.Framework
         where TAggregate : AggregateRoot<TId>
         where TId : struct
     {
-        Task<TAggregate> GetAsync(TId id);
-        Task StoreAsync(TAggregate aggregate);
+        Task<TAggregate> GetAsync(TId id, CancellationToken cancellationToken = default);
+        Task StoreAsync(TAggregate aggregate, CancellationToken cancellationToken = default);
     }
 
     public interface IEventStore<TAggregate> : IEventStore<TAggregate, Guid>
         where TAggregate : AggregateRoot
     {
-        new Task<TAggregate> GetAsync(Guid id);
     }
 }

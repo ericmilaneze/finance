@@ -1,11 +1,11 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 
-namespace Finance.MongoDbEventStore.Registry
+namespace Finance.MongoDb.Common.Registry
 {
-    internal static class ConventionsRegistry
+    public static class ConventionsRegistry
     {
-        internal static void RegisterConventions()
+        public static void RegisterConventions()
         {
             ConventionRegistry.Register(
                 "Custom Conventions",
@@ -13,7 +13,7 @@ namespace Finance.MongoDbEventStore.Registry
                 {
                     new CamelCaseElementNameConvention(),
                     new IgnoreIfNullConvention(true),
-                    new EnumRepresentationConvention(BsonType.String)
+                    new EnumRepresentationConvention(BsonType.Int32)
                 },
                 _ => true);
         }

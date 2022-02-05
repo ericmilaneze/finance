@@ -7,14 +7,12 @@ namespace Finance.DbEventStore
         where TAggregate : AggregateRoot<TId>
         where TId : struct
     {
-        public string Resolve(TAggregate aggregate)
-        {
-            return aggregate switch
+        public string Resolve(TAggregate aggregate) =>
+            aggregate switch
             {
                 CheckingAccount _ => "CheckingAccount",
                 _ => throw new EventStoreException("Could not resolve aggregate name."),
             };
-        }
     }
 
     public class AggregateNameResolver<TAggregate> : AggregateNameResolver<TAggregate, Guid>, IAggregateNameResolver<TAggregate>

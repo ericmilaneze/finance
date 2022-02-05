@@ -1,3 +1,4 @@
+using Finance.Common.FixInc.ChkAcc;
 using Finance.Domain.Events;
 using Finance.Domain.ValueObjects;
 using Finance.Framework;
@@ -25,6 +26,7 @@ namespace Finance.Domain.FixInc.ChkAcc
         {
             RaiseEvent(
                 new CheckingAccountEvents.V1.CheckingAccountCreated(
+                    id,
                     name,
                     description,
                     initialGrossValue,
@@ -35,6 +37,7 @@ namespace Finance.Domain.FixInc.ChkAcc
         {
             RaiseEvent(
                 new CheckingAccountEvents.V1.GrossValueUpdated(
+                    Id,
                     grossValue,
                     grossValue));
         }

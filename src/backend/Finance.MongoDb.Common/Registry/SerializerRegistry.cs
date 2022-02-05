@@ -2,11 +2,11 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 
-namespace Finance.MongoDbEventStore.Registry
+namespace Finance.MongoDb.Common.Registry
 {
-    internal static class SerializersRegistry
+    public static class SerializersRegistry
     {
-        internal static void RegisterSerializers()
+        public static void RegisterSerializers()
         {
             BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
             BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));

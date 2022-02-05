@@ -4,6 +4,7 @@
     <ProjectReference Include="..\Finance.Domain\Finance.Domain.csproj" />
     <ProjectReference Include="..\Finance.Framework\Finance.Framework.csproj" />
     <ProjectReference Include="..\Finance.DbEventStore\Finance.DbEventStore.csproj" />
+    <ProjectReference Include="..\Finance.MongoDb.Common\Finance.MongoDb.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

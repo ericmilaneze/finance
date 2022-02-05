@@ -17,25 +17,29 @@ namespace Finance.DbEventStore
         private readonly IAggregateNameResolver<TAggregate, TId> _aggregateNameResolver;
         private readonly IEventTypeResolver _eventTypeResolver;
         private readonly IDbEventStore<TId> _dbEventStore;
+        private readonly IDbProjection<TId> _dbProjection;
 
         public EventStore(
             IAggregateNameResolver<TAggregate, TId> aggregateNameResolver,
             IEventTypeResolver eventTypeResolver,
-            IDbEventStore<TId> dbEventStore)
+            IDbEventStore<TId> dbEventStore,
+            IDbProjection<TId> dbProjection)
         {
-            _dbEventStore = dbEventStore;
             _aggregateNameResolver = aggregateNameResolver;
             _eventTypeResolver = eventTypeResolver;
+            _dbEventStore = dbEventStore;
+            _dbProjection = dbProjection;
         }
 
-        public async Task<TAggregate> GetAsync(TId id)
+        public async Task<TAggregate> GetAsync(TId id, CancellationToken cancellationToken = default)
         {
             var aggregate = CreateAggregate(id);
 
             var eventRecords =
                 await _dbEventStore.GetEventRecordsAsync(
                     _aggregateNameResolver.Resolve(aggregate),
-                    id);
+                    id,
+                    cancellationToken);
 
             if (eventRecords.Count == 0)
                 throw new EventStoreException(NoEventRecordsFoundMessage);
@@ -49,7 +53,9 @@ namespace Finance.DbEventStore
             {
                 var aggregateConstructor = typeof(TAggregate)
                     .GetConstructor(
-                        BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance,
+                            BindingFlags.NonPublic
+                            | BindingFlags.CreateInstance
+                            | BindingFlags.Instance,
                         null,
                         new[] { typeof(Guid) },
                         null) ?? throw new EventStoreException(ConstructorNotFoundMessage);
@@ -70,17 +76,22 @@ namespace Finance.DbEventStore
             }
         }
 
-        public async Task StoreAsync(TAggregate aggregate)
+        public async Task StoreAsync(TAggregate aggregate, CancellationToken cancellationToken = default)
         {
             var nextVersion = await GetNextVersion();
             var eventRecords = GetEventRecords(aggregate, nextVersion).ToArray();
-            await _dbEventStore.StoreEventsAsync(eventRecords);
+            await _dbEventStore.StoreEventsAsync(eventRecords, cancellationToken);
+
+            if (Settings.Projection.IsEnabled)
+                await _dbProjection.ProjectEventsAsync(eventRecords, cancellationToken);
+
             aggregate.ClearEvents();
 
             async Task<int> GetNextVersion() =>
                 await _dbEventStore.GetNextVersionAsync(
                     _aggregateNameResolver.Resolve(aggregate),
-                    aggregate.Id);
+                    aggregate.Id,
+                    cancellationToken);
 
             IEnumerable<EventRecord<TId>> GetEventRecords(TAggregate aggregate, int nextVersion)
             {
@@ -107,8 +118,13 @@ namespace Finance.DbEventStore
         public EventStore(
             IAggregateNameResolver<TAggregate> aggregateNameResolver,
             IEventTypeResolver eventTypeResolver,
-            IDbEventStore<Guid> dbEventStore)
-            : base(aggregateNameResolver, eventTypeResolver, dbEventStore)
+            IDbEventStore dbEventStore,
+            IDbProjection dbProjection)
+                : base(
+                    aggregateNameResolver,
+                    eventTypeResolver,
+                    dbEventStore,
+                    dbProjection)
         {
         }
     }

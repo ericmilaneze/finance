@@ -1,7 +1,8 @@
-namespace Finance.Domain.FixInc.ChkAcc
+namespace Finance.Common.FixInc.ChkAcc
 {
     public enum CheckingAccountState
     {
+        NonExisting,
         Created
     }
 }

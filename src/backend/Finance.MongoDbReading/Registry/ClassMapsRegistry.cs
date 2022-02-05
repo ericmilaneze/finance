@@ -1,13 +1,13 @@
-using Finance.Framework;
+using Finance.DbReading.Models;
 using MongoDB.Bson.Serialization;
 
-namespace Finance.MongoDbEventStore.Registry
+namespace Finance.MongoDbReading.Registry
 {
     public static class ClassMapsRegistry
     {
         public static void RegisterClassMaps()
         {
-            BsonClassMap.RegisterClassMap<EventRecord<Guid>>(cm =>
+            BsonClassMap.RegisterClassMap<CheckingAccount>(cm =>
             {
                 cm.AutoMap();
                 cm.SetIgnoreExtraElements(true);
