@@ -10,7 +10,7 @@ namespace Finance.Domain.FixInc.ChkAcc
         private const string GrossValueNotSetMessage = "Gross value should be set.";
         private const string NetValueNotSetMessage = "Net value should be set.";
 
-        public CheckingAccountName? Name { get; private set; }
+        public AccountName? Name { get; private set; }
         public string? Description { get; private set; }
         public string? BankCode { get; private set; }
         public Money GrossValue { get; private set; } = new Money(default);
@@ -24,7 +24,7 @@ namespace Finance.Domain.FixInc.ChkAcc
 
         public CheckingAccount(
             Guid id,
-            CheckingAccountName name,
+            AccountName name,
             string description,
             string bankCode,
             Money initialGrossValue) : this(id)
@@ -63,7 +63,7 @@ namespace Finance.Domain.FixInc.ChkAcc
 
         private void HandleEvent(CheckingAccountEvents.V1.CheckingAccountCreated @event)
         {
-            Name = new CheckingAccountName(@event.Name);
+            Name = new AccountName(@event.Name);
             Description = @event.Description;
             BankCode = @event.BankCode;
             GrossValue = new Money(@event.GrossValue);

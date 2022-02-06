@@ -36,16 +36,16 @@ namespace Finance.MongoDbReading
                 switch (GetEvent(eventRecord))
                 {
                     case CheckingAccountEvents.V1.CheckingAccountCreated e:
-                        await HandleEventAsync(e, cancellationToken: cancellationToken);
+                        await HandleEventAsync(e, cancellationToken);
                         break;
                     case CheckingAccountEvents.V1.GrossValueUpdated e:
-                        await HandleEventAsync(e, cancellationToken: cancellationToken);
+                        await HandleEventAsync(e, cancellationToken);
                         break;
                     case CashEvents.V1.CashCreated e:
-                        await HandleEventAsync(e, cancellationToken: cancellationToken);
+                        await HandleEventAsync(e, cancellationToken);
                         break;
                     case CashEvents.V1.ValueUpdated e:
-                        await HandleEventAsync(e, cancellationToken: cancellationToken);
+                        await HandleEventAsync(e, cancellationToken);
                         break;
                 }
             }
@@ -94,7 +94,10 @@ namespace Finance.MongoDbReading
 
             await _database
                 .GetCollection<CheckingAccount>(CollectionNamesRegistry.GetCollectionName<CheckingAccount>())
-                .ReplaceOneAsync(x => x.Id == updatedModel.Id, updatedModel, cancellationToken: cancellationToken);
+                .ReplaceOneAsync(
+                    x => x.Id == updatedModel.Id,
+                    updatedModel,
+                    cancellationToken: cancellationToken);
         }
 
         private async Task HandleEventAsync(
@@ -129,7 +132,10 @@ namespace Finance.MongoDbReading
 
             await _database
                 .GetCollection<Cash>(CollectionNamesRegistry.GetCollectionName<Cash>())
-                .ReplaceOneAsync(x => x.Id == updatedModel.Id, updatedModel, cancellationToken: cancellationToken);
+                .ReplaceOneAsync(
+                    x => x.Id == updatedModel.Id,
+                    updatedModel,
+                    cancellationToken: cancellationToken);
         }
     }
 }

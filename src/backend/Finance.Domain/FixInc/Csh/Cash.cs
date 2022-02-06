@@ -20,8 +20,8 @@ namespace Finance.Domain.FixInc.Csh
         public Cash(Guid id, Money value) : this(id) =>
             RaiseEvent(new CashEvents.V1.CashCreated(id, value));
 
-        public void UpdateValue(Guid id, Money value) =>
-            RaiseEvent(new CashEvents.V1.ValueUpdated(id, value));
+        public void UpdateValue(Money value) =>
+            RaiseEvent(new CashEvents.V1.ValueUpdated(Id, value));
 
         public override void HandleEvent(IEvent @event)
         {
